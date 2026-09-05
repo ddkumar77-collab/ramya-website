@@ -1,21 +1,19 @@
+// tina/config.js
 import { defineConfig } from "tinacms";
-
-const branch = process.env.HEAD || process.env.VERCEL_GIT_COMMIT_REF || "main";
-
-export default defineConfig({
+var branch = process.env.HEAD || process.env.VERCEL_GIT_COMMIT_REF || "main";
+var config_default = defineConfig({
   branch,
   clientId: "95de2861-b5ae-4ae0-953d-0a1e36e402d9",
   token: "014239729384681715d35822e531864d93962b00",
-
   build: {
     outputFolder: "admin",
-    publicFolder: "./",
+    publicFolder: "./"
   },
   media: {
     tina: {
       mediaRoot: "assets",
-      publicFolder: "./",
-    },
+      publicFolder: "./"
+    }
   },
   schema: {
     collections: [
@@ -25,42 +23,42 @@ export default defineConfig({
         path: "content",
         format: "json",
         match: {
-          include: "bio",
+          include: "bio"
         },
         ui: {
           allowedActions: {
             create: false,
-            delete: false,
-          },
+            delete: false
+          }
         },
         fields: [
           {
             type: "string",
             name: "subtitle",
-            label: "Hero Subtitle",
+            label: "Hero Subtitle"
           },
           {
             type: "string",
             name: "headline",
-            label: "Hero Headline",
+            label: "Hero Headline"
           },
           {
             type: "string",
             name: "bioParagraph1",
             label: "Bio Paragraph 1",
             ui: {
-              component: "textarea",
-            },
+              component: "textarea"
+            }
           },
           {
             type: "string",
             name: "bioParagraph2",
             label: "Bio Paragraph 2",
             ui: {
-              component: "textarea",
-            },
-          },
-        ],
+              component: "textarea"
+            }
+          }
+        ]
       },
       {
         name: "events",
@@ -68,28 +66,28 @@ export default defineConfig({
         path: "content",
         format: "json",
         match: {
-          include: "events",
+          include: "events"
         },
         fields: [
           {
             type: "string",
             name: "category",
-            label: "Category / Event Name",
+            label: "Category / Event Name"
           },
           {
             type: "string",
             name: "title",
-            label: "Event Title",
+            label: "Event Title"
           },
           {
             type: "string",
             name: "description",
             label: "Description",
             ui: {
-              component: "textarea",
-            },
-          },
-        ],
+              component: "textarea"
+            }
+          }
+        ]
       },
       {
         name: "publications",
@@ -97,34 +95,37 @@ export default defineConfig({
         path: "content",
         format: "json",
         match: {
-          include: "publications",
+          include: "publications"
         },
         fields: [
           {
             type: "string",
             name: "type",
-            label: "Publication Type",
+            label: "Publication Type"
           },
           {
             type: "string",
             name: "title",
-            label: "Title",
+            label: "Title"
           },
           {
             type: "string",
             name: "description",
             label: "Description",
             ui: {
-              component: "textarea",
-            },
+              component: "textarea"
+            }
           },
           {
             type: "string",
             name: "link",
-            label: "Link URL",
-          },
-        ],
-      },
-    ],
-  },
+            label: "Link URL"
+          }
+        ]
+      }
+    ]
+  }
 });
+export {
+  config_default as default
+};

@@ -3,12 +3,238 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard | Ramya Deepak Kumar</title>
-  <!-- Explicit CMS Configuration URL Link -->
-  <link href="/admin/config.yml" type="text/yaml" rel="cms-config-url">
-  <!-- Decap CMS Core Bundle -->
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <title>Admin Panel | Ramya Deepak Kumar</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>
+    body {
+      padding: 40px 20px;
+    }
+    .admin-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      background: var(--bg-color);
+      color: var(--text-color);
+    }
+    textarea.form-control {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .btn-primary {
+      background: var(--text-color);
+      color: #FFF;
+      border: none;
+      padding: 14px 28px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background var(--transition-speed);
+    }
+    .btn-primary:hover {
+      background: var(--accent-color);
+    }
+    .status-msg {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .status-success {
+      background: #E6F4EA;
+      color: #137333;
+      border: 1px solid #CEEAD6;
+    }
+    .status-error {
+      background: #FCE8E6;
+      color: #C5221F;
+      border: 1px solid #FAD2CF;
+    }
+  </style>
 </head>
 <body>
+
+  <div class="container" style="max-width: 750px;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+      <div>
+        <h1 style="font-size: 2.2rem;">Website Admin Panel</h1>
+        <p style="color: var(--text-muted); margin-bottom: 0;">Update Ramya's bio, headline, and speaking events.</p>
+      </div>
+      <a href="../" class="read-more" style="font-size: 0.85rem;">← View Live Site</a>
+    </div>
+
+    <!-- --- GitHub Auth Token Setup --- -->
+    <div class="admin-card">
+      <h3 style="margin-bottom: 12px;">1. Authentication</h3>
+      <div class="form-group" style="margin-bottom: 8px;">
+        <label for="gh-token">GitHub Access Token</label>
+        <input type="password" id="gh-token" class="form-control" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+      </div>
+      <small style="color: var(--text-muted); font-size: 0.8rem;">
+        Saved securely in your browser. Needs <code>repo</code> access permission.
+      </small>
+    </div>
+
+    <!-- --- Bio Editing Section --- -->
+    <div class="admin-card">
+      <h3 style="margin-bottom: 20px;">2. Edit Bio & Hero Section</h3>
+      
+      <div class="form-group">
+        <label for="bio-subtitle">Hero Subtitle</label>
+        <input type="text" id="bio-subtitle" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="bio-headline">Hero Headline</label>
+        <input type="text" id="bio-headline" class="form-control">
+      </div>
+
+      <div class="form-group">
+        <label for="bio-p1">Bio Paragraph 1</label>
+        <textarea id="bio-p1" class="form-control"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="bio-p2">Bio Paragraph 2</label>
+        <textarea id="bio-p2" class="form-control"></textarea>
+      </div>
+    </div>
+
+    <!-- --- Save Button & Status --- -->
+    <div style="text-align: right; margin-bottom: 60px;">
+      <button id="save-btn" class="btn-primary">Publish Changes Live</button>
+      <div id="status-box" class="status-msg"></div>
+    </div>
+
+  </div>
+
+  <script>
+    const REPO_OWNER = 'ddkumar77-collab';
+    const REPO_NAME = 'ramya-website';
+    const FILE_PATH = 'content/bio.json';
+
+    const tokenInput = document.getElementById('gh-token');
+    const subtitleInput = document.getElementById('bio-subtitle');
+    const headlineInput = document.getElementById('bio-headline');
+    const p1Input = document.getElementById('bio-p1');
+    const p2Input = document.getElementById('bio-p2');
+    const saveBtn = document.getElementById('save-btn');
+    const statusBox = document.getElementById('status-box');
+
+    // Load saved token
+    const savedToken = localStorage.getItem('ramya_gh_token');
+    if (savedToken) tokenInput.value = savedToken;
+
+    // Save token to localStorage on change
+    tokenInput.addEventListener('change', () => {
+      localStorage.setItem('ramya_gh_token', tokenInput.value.trim());
+    });
+
+    // Fetch existing content
+    fetch('../content/bio.json')
+      .then(res => res.json())
+      .then(data => {
+        subtitleInput.value = data.subtitle || '';
+        headlineInput.value = data.headline || '';
+        p1Input.value = data.bioParagraph1 || '';
+        p2Input.value = data.bioParagraph2 || '';
+      })
+      .catch(err => console.log('Could not load initial bio.json'));
+
+    // Save to GitHub API
+    saveBtn.addEventListener('click', async () => {
+      const token = tokenInput.value.trim();
+      if (!token) {
+        showStatus('Please enter your GitHub Access Token above.', 'error');
+        return;
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Publishing...';
+      showStatus('Connecting to GitHub...', 'success');
+
+      try {
+        // 1. Get current file SHA
+        const getRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+          headers: { 'Authorization': `token ${token}` }
+        });
+        
+        let sha = '';
+        if (getRes.ok) {
+          const fileData = await getRes.json();
+          sha = fileData.sha;
+        }
+
+        // 2. Prepare payload
+        const updatedBio = {
+          subtitle: subtitleInput.value.trim(),
+          headline: headlineInput.value.trim(),
+          bioParagraph1: p1Input.value.trim(),
+          bioParagraph2: p2Input.value.trim()
+        };
+
+        const contentEncoded = btoa(unescape(encodeURIComponent(JSON.stringify(updatedBio, null, 2))));
+
+        // 3. Commit to GitHub
+        const putRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: 'Update bio via Admin Panel',
+            content: contentEncoded,
+            sha: sha || undefined
+          })
+        });
+
+        if (putRes.ok) {
+          showStatus('✨ Success! Bio updated live. Vercel is publishing changes in ~30 seconds.', 'success');
+        } else {
+          const errData = await putRes.json();
+          showStatus(`Failed to update: ${errData.message || 'Check token permissions.'}`, 'error');
+        }
+      } catch (err) {
+        showStatus(`Error: ${err.message}`, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Publish Changes Live';
+      }
+    });
+
+    function showStatus(msg, type) {
+      statusBox.style.display = 'block';
+      statusBox.textContent = msg;
+      statusBox.className = `status-msg status-${type}`;
+    }
+  </script>
 </body>
 </html>

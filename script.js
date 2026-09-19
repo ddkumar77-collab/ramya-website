@@ -48,79 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   applyFadeAnimations();
 
-  // --- Fetch Dynamic CMS Content (Bio) ---
-  fetch('content/bio.json')
-    .then(res => {
-      if (!res.ok) throw new Error("No bio.json");
-      return res.json();
-    })
-    .then(data => {
-      if (data.subtitle) {
-        const sub = document.querySelector('.hero-subtitle');
-        if (sub) sub.textContent = data.subtitle;
-      }
-      if (data.headline) {
-        const h1 = document.querySelector('.hero-text h1');
-        if (h1) h1.textContent = data.headline;
-      }
-      const paragraphs = document.querySelectorAll('.hero-text p');
-      if (paragraphs[0] && data.bioParagraph1) paragraphs[0].innerHTML = data.bioParagraph1;
-      if (paragraphs[1] && data.bioParagraph2) paragraphs[1].innerHTML = data.bioParagraph2;
-    })
-    .catch(err => console.log('Using static fallback for bio.'));
-
-  // --- Fetch Dynamic CMS Content (Publications & Links) ---
-  fetch('content/publications.json')
-    .then(res => {
-      if (!res.ok) throw new Error("No publications.json");
-      return res.json();
-    })
-    .then(data => {
-      if (Array.isArray(data) && data.length > 0) {
-        const pubContainer = document.getElementById('cms-pubs-container');
-        if (pubContainer) {
-          pubContainer.innerHTML = data.map(pub => `
-            <div class="writing-item">
-              <div class="writing-meta">${pub.type || 'Publication'}</div>
-              <div class="writing-content">
-                <h3>${pub.link ? `<a href="${pub.link}" target="_blank">${pub.title}</a>` : pub.title}</h3>
-                <p>${pub.description || ''}</p>
-                ${pub.link ? `<a href="${pub.link}" class="read-more" target="_blank" style="font-size: 0.85rem;">View Article</a>` : ''}
-              </div>
-            </div>
-            <hr class="divider" style="margin: 20px 0;">
-          `).join('');
-          applyFadeAnimations();
-        }
-      }
-    })
-    .catch(err => console.log('Using static fallback for publications.'));
-
-  // --- Fetch Dynamic CMS Content (Events) ---
-  fetch('content/events.json')
-    .then(res => {
-      if (!res.ok) throw new Error("No events.json");
-      return res.json();
-    })
-    .then(data => {
-      if (Array.isArray(data) && data.length > 0) {
-        const eventsGrid = document.querySelector('.events-grid');
-        if (eventsGrid) {
-          eventsGrid.innerHTML = data.map(event => `
-            <div class="event-card">
-              <div class="event-details">
-                <div class="event-date">${event.category || 'Event'}</div>
-                <h3>${event.title}</h3>
-                <p>${event.description}</p>
-              </div>
-            </div>
-          `).join('');
-          applyFadeAnimations();
-        }
-      }
-    })
-    .catch(err => console.log('Using static fallback for events.'));
-
   // --- Dynamic Substack Feed Fetching ---
   const feedContainer = document.getElementById('substack-feed-container');
   if (feedContainer) {
@@ -152,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const articleHtml = `
+              <hr class="divider" style="margin: 20px 0;">
               <div class="writing-item">
                 <div class="writing-meta">Newsletter<br>${formattedDate}</div>
                 <div class="writing-content">
@@ -160,7 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
                   <a href="${item.link}" class="read-more" target="_blank" style="font-size: 0.85rem;">Read on Substack</a>
                 </div>
               </div>
-              ${index < itemsToDisplay.length - 1 ? '<hr class="divider" style="margin: 20px 0;">' : ''}
             `;
             feedContainer.insertAdjacentHTML('beforeend', articleHtml);
           });
@@ -177,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function showFallbackFeed() {
     feedContainer.innerHTML = `
+      <hr class="divider" style="margin: 20px 0;">
       <div class="writing-item">
         <div class="writing-meta">Newsletter</div>
         <div class="writing-content">

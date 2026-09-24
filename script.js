@@ -1,17 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
-  console.log("Ramya Deepak Kumar's portfolio initialized successfully.");
+  console.log("Ramya Deepak Kumar website initialized successfully.");
 
-  // --- Smooth Scroll for Navigation ---
-  const navLinks = document.querySelectorAll('nav a, .social-links a[href^="#"]');
+  // --- Smooth Scroll for Navigation & Anchor Links ---
+  const navLinks = document.querySelectorAll('nav a, .social-links a[href^="#"], .btn-group a[href^="#"]');
   navLinks.forEach(link => {
     link.addEventListener('click', (e) => {
       const targetId = link.getAttribute('href');
-      if (targetId.startsWith('#')) {
+      if (targetId && targetId.startsWith('#')) {
         e.preventDefault();
         const targetElement = document.querySelector(targetId);
         if (targetElement) {
+          const headerOffset = 70;
+          const elementPosition = targetElement.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
           window.scrollTo({
-            top: targetElement.offsetTop - 40,
+            top: offsetPosition,
             behavior: 'smooth'
           });
         }
@@ -19,13 +23,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // --- Card Micro-Animations on Scroll ---
+  // --- Active Nav Link Highlighting on Scroll ---
+  const sections = document.querySelectorAll('section[id]');
+  const mainNavLinks = document.querySelectorAll('nav a[href^="#"]');
+
+  function updateActiveNav() {
+    let scrollPosition = window.scrollY + 100;
+
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop;
+      const sectionHeight = section.offsetHeight;
+      const sectionId = section.getAttribute('id');
+
+      if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+        mainNavLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === `#${sectionId}`) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateActiveNav);
+
+  // --- Micro-Animations on Scroll ---
   function applyFadeAnimations() {
-    const fadeElements = document.querySelectorAll('.writing-item, .event-card');
+    const fadeElements = document.querySelectorAll('.card, .writing-item, .process-step, .journey-node, .positioning-box');
+    
     const observerOptions = {
       root: null,
-      threshold: 0.15,
-      rootMargin: '0px'
+      threshold: 0.1,
+      rootMargin: '0px 0px -40px 0px'
     };
 
     const observer = new IntersectionObserver((entries, observer) => {
@@ -40,8 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fadeElements.forEach(el => {
       el.style.opacity = '0';
-      el.style.transform = 'translateY(15px)';
-      el.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+      el.style.transform = 'translateY(16px)';
+      el.style.transition = 'opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
       observer.observe(el);
     });
   }
@@ -62,30 +92,30 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(data => {
         if (data.status === 'ok' && data.items && data.items.length > 0) {
           feedContainer.innerHTML = '';
-          const itemsToDisplay = data.items.slice(0, 2);
-          itemsToDisplay.forEach((item, index) => {
+          const itemsToDisplay = data.items.slice(0, 3);
+          itemsToDisplay.forEach((item) => {
             const pubDate = new Date(item.pubDate);
             const formattedDate = pubDate.toLocaleDateString('en-US', {
               year: 'numeric',
-              month: 'short'
+              month: 'short',
+              day: 'numeric'
             });
 
             const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = item.description || item.content;
+            tempDiv.innerHTML = item.description || item.content || "";
             let snippet = tempDiv.textContent || tempDiv.innerText || "";
             snippet = snippet.trim();
-            if (snippet.length > 140) {
-              snippet = snippet.substring(0, 137) + '...';
+            if (snippet.length > 150) {
+              snippet = snippet.substring(0, 147) + '...';
             }
 
             const articleHtml = `
-              <hr class="divider" style="margin: 20px 0;">
               <div class="writing-item">
-                <div class="writing-meta">Newsletter<br>${formattedDate}</div>
+                <div class="writing-meta">Substack Essay<br>${formattedDate}</div>
                 <div class="writing-content">
                   <h3><a href="${item.link}" target="_blank">${item.title}</a></h3>
                   <p>${snippet}</p>
-                  <a href="${item.link}" class="read-more" target="_blank" style="font-size: 0.85rem;">Read on Substack</a>
+                  <a href="${item.link}" class="read-more" target="_blank">Read on Substack &rarr;</a>
                 </div>
               </div>
             `;
@@ -97,23 +127,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       })
       .catch(err => {
-        console.error("Substack RSS load error:", err);
+        console.warn("Substack RSS load error:", err);
         showFallbackFeed();
       });
   }
 
   function showFallbackFeed() {
     feedContainer.innerHTML = `
-      <hr class="divider" style="margin: 20px 0;">
       <div class="writing-item">
-        <div class="writing-meta">Newsletter</div>
+        <div class="writing-meta">Substack Feed</div>
         <div class="writing-content">
-          <h3><a href="https://ramyadeepak.substack.com" target="_blank">On Education Substack</a></h3>
-          <p>Read Ramya's latest articles and essays on education leadership, student agency, and pedagogical research.</p>
-          <a href="https://ramyadeepak.substack.com" class="read-more" target="_blank" style="font-size: 0.85rem;">Visit Substack</a>
+          <h3><a href="https://ramyadeepak.substack.com" target="_blank">Thinking Aloud on Substack</a></h3>
+          <p>Read Ramya's latest articles and essays on education leadership, educator co-agency, and pedagogical research.</p>
+          <a href="https://ramyadeepak.substack.com" class="read-more" target="_blank">Visit Substack &rarr;</a>
         </div>
       </div>
     `;
     applyFadeAnimations();
   }
 });
+
